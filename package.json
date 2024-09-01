@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "build": "tsc",
+    "start": "node lib/bot.js"
+  },
+  "dependencies": {
+    "@atproto/api": "^0.13.5",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.5.2",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.5.4"
+  }
+}
