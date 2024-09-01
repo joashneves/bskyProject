@@ -28,7 +28,7 @@ async function startBot() {
     });
 
     console.log('Login realizado com sucesso!');
-
+    // Criar um input no console
     rl.question('Digite a mensagem para postar no Bluesky: ', async (message) => {
         try {
           await agent.post({
