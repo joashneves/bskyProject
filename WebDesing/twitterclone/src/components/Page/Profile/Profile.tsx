@@ -1,43 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { BskyAgent } from '@atproto/api';
+import { useNavigate } from 'react-router-dom';
+
+interface ProfileData {
+  displayName: string;
+  description: string;
+  followersCount: number;
+  followsCount: number;
+  postsCount: number;
+}
 
 const Profile: React.FC = () => {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>('');
+  const navigate = useNavigate(); // Hook para navegação
 
   useEffect(() => {
-    const token = window.sessionStorage.getItem('accessJwt');
-    if (!token) {
-      setError('Nenhum token encontrado. Por favor, faça login.');
-      setLoading(false);
-      return;
-    }
-
     const fetchProfile = async () => {
-      let config = {
-        method: 'get',
-        maxBodyLength: Infinity,
-        url: 'https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      };
+      const identifier = window.sessionStorage.getItem('identifier') || '';
+      const password = window.sessionStorage.getItem('password') || '';
+
+      const agent = new BskyAgent({
+        service: 'https://bsky.social'
+      });
 
       try {
-        const response = await axios(config);
-        setProfile(response.data);
-        setLoading(false);
+        await agent.login({
+          identifier: identifier,
+          password: password
+        });
+
+        // Obtém dados do perfil
+        const profileResponse = await agent.app.bsky.actor.getProfile({
+          actor: identifier // Use o identificador do usuário para obter o perfil
+        });
+
+        // Atualiza o estado com os dados do perfil
+        setProfile({
+          displayName: profileResponse.data.displayName,
+          description: profileResponse.data.description,
+          followersCount: profileResponse.data.followersCount,
+          followsCount: profileResponse.data.followsCount,
+          postsCount: profileResponse.data.postsCount
+        });
+
+        navigate('/profile'); // Redireciona para a página de perfil
       } catch (error) {
-        setError('Erro ao carregar o perfil.');
+        setError('Erro ao fazer login ou obter perfil.');
+        console.error('Erro ao fazer login ou obter perfil:', error);
+      } finally {
         setLoading(false);
-        console.error('Erro ao buscar perfil:', error);
       }
     };
 
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   if (loading) {
     return <p>Carregando...</p>;
@@ -50,7 +68,7 @@ const Profile: React.FC = () => {
   return (
     <div>
       <h1>Perfil do Usuário</h1>
-      {profile && (
+      {profile ? (
         <div>
           <p>Nome: {profile.displayName}</p>
           <p>Descrição: {profile.description}</p>
@@ -58,6 +76,8 @@ const Profile: React.FC = () => {
           <p>Seguindo: {profile.followsCount}</p>
           <p>Posts: {profile.postsCount}</p>
         </div>
+      ) : (
+        <p>Perfil não encontrado.</p>
       )}
     </div>
   );

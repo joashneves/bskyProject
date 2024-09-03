@@ -21,18 +21,11 @@ function Login() {
         identifier: identifier,
         password: password
       });
-
-      // Obter os detalhes do perfil do usuário logado
-      const profile = await agent.getProfile({ handle: identifier });
-
-      // Armazena o nome e o ícone do usuário
-      const userData = {
-        displayName: profile.data.displayName,
-        avatar: profile.data.avatar
-      };
-
+      console.log(agent)
       // Redireciona para a página de perfil com as informações do usuário
-      navigate('/profile', { state: userData });
+      window.sessionStorage.setItem("identifier", identifier);
+      window.sessionStorage.setItem("password", password)
+      navigate('/profile');
     } catch (error) {
       setMessage('Erro ao fazer login. Verifique suas credenciais e tente novamente.');
       console.error('Erro ao fazer login:', error);
