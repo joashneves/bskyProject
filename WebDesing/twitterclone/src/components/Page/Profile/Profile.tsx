@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { BskyAgent } from '@atproto/api';
 import { useNavigate } from 'react-router-dom';
+import  styles from './Profile.module.css';
 
 interface ProfileData {
+  avatar: string,
+  banner: string,
   displayName: string;
   description: string;
   followersCount: number;
@@ -38,6 +41,8 @@ const Profile: React.FC = () => {
 
         // Atualiza o estado com os dados do perfil
         setProfile({
+          avatar: profileResponse.data.avatar,
+          banner: profileResponse.data.banner,
           displayName: profileResponse.data.displayName,
           description: profileResponse.data.description,
           followersCount: profileResponse.data.followersCount,
@@ -45,7 +50,7 @@ const Profile: React.FC = () => {
           postsCount: profileResponse.data.postsCount
         });
 
-        navigate('/profile'); // Redireciona para a página de perfil
+        console.log(profileResponse)
       } catch (error) {
         setError('Erro ao fazer login ou obter perfil.');
         console.error('Erro ao fazer login ou obter perfil:', error);
@@ -69,16 +74,28 @@ const Profile: React.FC = () => {
     <div>
       <h1>Perfil do Usuário</h1>
       {profile ? (
-        <div>
-          <p>Nome: {profile.displayName}</p>
+        <div className={styles.perfilAvatarConteiner}>
+        <img className={styles.perfilAvatarBanner} src={profile.banner} alt="Banner do Usuário" />
+        <img className={styles.perfilAvatar} src={profile.avatar} alt="Avatar do Usuário" />
+        <div className={styles.perfilInfo}>
+        <div className={styles.DescricaoNome}>
+          <h1>Nome: {profile.displayName}</h1>
           <p>Descrição: {profile.description}</p>
+        </div>
+        <div className={styles.InformacoesCount}>
           <p>Seguidores: {profile.followersCount}</p>
           <p>Seguindo: {profile.followsCount}</p>
           <p>Posts: {profile.postsCount}</p>
         </div>
+        </div>
+        </div>
+      
       ) : (
         <p>Perfil não encontrado.</p>
       )}
+
+          
+        
     </div>
   );
 };

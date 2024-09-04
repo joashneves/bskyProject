@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import './index.css'
-import Login from './components/Page/Login.tsx'
-import App from './App.tsx'
+import Login from './components/Page/Login/Login.tsx'
 import Profile from './components/Page/Profile/Profile.tsx';
 import Home from './components/Page/Home/Home.tsx';
 
