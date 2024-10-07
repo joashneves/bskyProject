@@ -1,53 +1,44 @@
-import { BskyAgent } from '@atproto/api';
+import blue from '@atproto/api';
 import * as dotenv from 'dotenv';
-import * as readline from 'readline';
+import { checkMentions } from './services/checkmention';
+import { addLabel } from './services/addLabels';
+import { declararLabeler } from './services/labeler';
+import { aplicarPreferenciasUsuario } from './services/userPreferences';
+import { relatarUsuario } from './services/reportUser';
 
 // Carrega as variáveis de ambiente do arquivo .env
 dotenv.config();
+const { BskyAgent } = blue;
 
-// Configura o readline para ler do console
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+async function main() {
+  await declararLabeler();
+  await aplicarPreferenciasUsuario();
+  await relatarUsuario();
+}
 
 
-// Função assíncrona para executar o bot
 async function startBot() {
-  // Cria uma instância do agente
   const agent = new BskyAgent({
     service: 'https://bsky.social'
   });
 
-
   try {
-    // Faz o login
     await agent.login({
-        identifier: process.env.BLUESKY_IDENTIFIER!,
-        password: process.env.BLUESKY_PASSWORD!
+      identifier: process.env.BLUESKY_IDENTIFIER!,
+      password: process.env.BLUESKY_PASSWORD!
     });
 
     console.log('Login realizado com sucesso!');
-    // Criar um input no console
-    rl.question('Digite a mensagem para postar no Bluesky: ', async (message) => {
-        try {
-          await agent.post({
-            text: message,
-            createdAt: new Date().toISOString()
-          });
-  
-          console.log('Postagem feita com sucesso!');
-        } catch (error) {
-          console.error('Erro ao postar a mensagem:', error);
-        } finally {
-          rl.close(); // Fecha a interface de leitura
-        }
-      });
+
+    // Verifica menções a cada 60 segundos
+    setInterval(() => checkMentions(agent), 60000);
+
+    // Exemplo de uso da função para adicionar labels
+    await addLabel(agent, 'uri-do-post', 'cid-do-post', 'label-exemplo');
 
   } catch (error) {
     console.error('Erro ao iniciar o bot:', error);
   }
 }
 
-// Inicia o bot
 startBot();

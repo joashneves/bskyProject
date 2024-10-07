@@ -25,46 +25,35 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const api_1 = require("@atproto/api");
 const dotenv = __importStar(require("dotenv"));
-const readline = __importStar(require("readline"));
+const checkmention_1 = require("./services/checkmention");
+const addLabels_1 = require("./services/addLabels");
+const labeler_1 = require("./services/labeler");
+const userPreferences_1 = require("./services/userPreferences");
+const reportUser_1 = require("./services/reportUser");
 // Carrega as variáveis de ambiente do arquivo .env
 dotenv.config();
-// Configura o readline para ler do console
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-// Função assíncrona para executar o bot
+async function main() {
+    await (0, labeler_1.declararLabeler)();
+    await (0, userPreferences_1.aplicarPreferenciasUsuario)();
+    await (0, reportUser_1.relatarUsuario)();
+}
 async function startBot() {
-    // Cria uma instância do agente
     const agent = new api_1.BskyAgent({
         service: 'https://bsky.social'
     });
     try {
-        // Faz o login
         await agent.login({
             identifier: process.env.BLUESKY_IDENTIFIER,
             password: process.env.BLUESKY_PASSWORD
         });
         console.log('Login realizado com sucesso!');
-        rl.question('Digite a mensagem para postar no Bluesky: ', async (message) => {
-            try {
-                await agent.post({
-                    text: message,
-                    createdAt: new Date().toISOString()
-                });
-                console.log('Postagem feita com sucesso!');
-            }
-            catch (error) {
-                console.error('Erro ao postar a mensagem:', error);
-            }
-            finally {
-                rl.close(); // Fecha a interface de leitura
-            }
-        });
+        // Verifica menções a cada 60 segundos
+        setInterval(() => (0, checkmention_1.checkMentions)(agent), 60000);
+        // Exemplo de uso da função para adicionar labels
+        await (0, addLabels_1.addLabel)(agent, 'uri-do-post', 'cid-do-post', 'label-exemplo');
     }
     catch (error) {
         console.error('Erro ao iniciar o bot:', error);
     }
 }
-// Inicia o bot
 startBot();
